@@ -22,7 +22,10 @@ export default function Home() {
 
     // Чтение параметров из URL при монтировании компонента
     useEffect(() => {
-        setSortOption(`sort=${searchParams.get('sort')}&order=${searchParams.get('order')}`);
+        if (sortOption !== "default") {
+            setSortOption(`sort=${searchParams.get('sort')}&order=${searchParams.get('order')}`);
+        }
+
         setCurrentPage(computedSortParams.currentPage);
         fetchCarsData(`/api/cars?_limit=12&_page=${computedSortParams.currentPage}${computedSortParams.sortParams}`);
     }, [computedSortParams, fetchCarsData]);
