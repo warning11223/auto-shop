@@ -39,12 +39,12 @@ export default function CarSlider({ images }: Props) {
                                 src={img}
                                 alt={`Car image ${idx}`}
                                 className={`w-full h-full object-cover rounded-lg cursor-pointer transition-opacity duration-300`}
-                                layout="fill"
+                                fill
+                                sizes="(max-width: 768px) 100vw, 50vw"
                                 onLoad={() => setLoading(false)}
                                 style={{opacity: loading ? '0' : '1'}}
                             />
                         </div>
-
                     </SwiperSlide>
                 ))}
             </Swiper>

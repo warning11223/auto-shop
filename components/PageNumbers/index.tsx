@@ -39,8 +39,8 @@ export const PageNumbers: FC<Props> = ({ pagination, currentPage, handlePageChan
                 if (page === "...") {
                     return (
                         <span key={index} className="px-3 py-2 text-gray-500">
-                                {page}
-                            </span>
+                            {page}
+                        </span>
                     );
                 }
                 return (
