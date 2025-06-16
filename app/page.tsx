@@ -1,13 +1,13 @@
 'use client'
 
-import { Card } from "@/components/Card";
-import {Skeletons} from "@/components/Skeletons";
-import 'react-loading-skeleton/dist/skeleton.css';
-import React, { useState, useEffect } from "react";
+import {Cards} from "@/components/Cards";
+import React, {useState, useEffect, useCallback, useMemo} from "react";
 import {SelectSort} from "@/components/SelectSort";
 import { Pagination } from "@/components/Pagination";
 import {fetchCars, ICar, IPaginationMeta} from "@/api/fetchCars";
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
+
+import 'react-loading-skeleton/dist/skeleton.css';
 
 export default function Home() {
     const [cars, setCars] = useState<ICar[]>([]);
@@ -21,7 +21,7 @@ export default function Home() {
     const searchParams = useSearchParams();
     const router = useRouter();
 
-    const fetchCarsData = async (pageUrl: string) => {
+    const fetchCarsData = useCallback(async (pageUrl: string) => {
         setLoading(true);
         const response = await fetchCars(pageUrl);
 
@@ -33,52 +33,50 @@ export default function Home() {
         }
 
         setLoading(false);
-    };
+    }, []);
 
     const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const value = event.target.value;
         setSortOption(value);
         setCurrentPage(1);
 
-        // Формируем новый URL с параметрами сортировки
-        let sortParams = '';
-        if (value === 'sort=price&order=asc') {
-            sortParams = '&_sort=price&_order=asc';
-        } else if (value === 'sort=price&order=desc') {
-            sortParams = '&_sort=price&_order=desc';
-        }
+        const sortMap: { [key: string]: string } = {
+            'sort=price&order=asc': '&_sort=price&_order=asc',
+            'sort=price&order=desc': '&_sort=price&_order=desc',
+        };
 
-        // Обновляем URL с новым параметром сортировки
+        const newSortParams = sortMap[value] || '';
+        setSortParams(newSortParams);
+
         if (value !== 'default') {
             router.push(`${pathname}?${value}&page=1`);
         } else {
             router.push(pathname);
         }
-
-        setSortParams(sortParams);
     };
 
-    // Чтение параметров из URL при монтировании компонента
-    useEffect(() => {
+    const computedSortParams = useMemo(() => {
         const sort = searchParams.get('sort');
         const order = searchParams.get('order');
         const page = searchParams.get('page');
         const sortParams = (sort && order)
             ? `&_sort=${sort}&_order=${order}`
             : (sort ? `&_sort=${sort}`
-            : (order ? `_order=${order}`
-            : ''));
+                : (order ? `_order=${order}` : ''));
 
-        if (sort) {
-            setSortOption(`sort=${sort}&order=${order}`);
-        }
-
-        if (page) {
-            setCurrentPage(parseInt(page, 10));
-        }
-
-        fetchCarsData(`/api/cars?_limit=12&_page=${page || 1}${sortParams}`);
+        return {
+            sortParams,
+            currentPage: page ? parseInt(page, 10) : 1
+        };
     }, [searchParams]);
+
+    // Чтение параметров из URL при монтировании компонента
+    useEffect(() => {
+        setSortOption(`sort=${searchParams.get('sort')}&order=${searchParams.get('order')}`);
+        setCurrentPage(computedSortParams.currentPage);
+        fetchCarsData(`/api/cars?_limit=12&_page=${computedSortParams.currentPage}${computedSortParams.sortParams}`);
+    }, [computedSortParams, fetchCarsData]);
+
 
     return (
         <div className="flex justify-center items-center h-full py-8 bg-gray-100">
@@ -88,19 +86,10 @@ export default function Home() {
                     handleSortChange={handleSortChange}
                 />
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-6 xl:gap-8">
-                    {loading ? (
-                        <Skeletons />
-                    ) : (
-                        cars?.length > 0 ? (
-                            cars.map((car, index) => (
-                                <Card key={index} car={car} />
-                            ))
-                        ) : (
-                            <div>Нет данных.</div>
-                        )
-                    )}
-                </div>
+                <Cards
+                    loading={loading}
+                    cars={cars}
+                />
 
                 <Pagination
                     pagination={pagination as IPaginationMeta}

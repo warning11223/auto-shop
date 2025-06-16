@@ -1,5 +1,5 @@
 import Link from "next/link";
-import React, {FC} from 'react';
+import React, {FC, useMemo} from 'react';
 import {Youtube} from "lucide-react";
 import {ICar} from "@/api/fetchCars";
 import CarSlider from "@/components/CardSlider";
@@ -9,8 +9,8 @@ interface Props {
 }
 
 export const Card: FC<Props> = ({car}) => {
-    const formattedPrice = car.price.toLocaleString('ru-RU');
-    const formattedRun = car.run.toLocaleString('ru-RU');
+    const formattedPrice = useMemo(() => car.price.toLocaleString('ru-RU'), [car.price]);
+    const formattedRun = useMemo(() => car.run.toLocaleString('ru-RU'), [car.run]);
 
     return (
         <div className="relative border border-gray-300 rounded-lg p-4 sm:p-6 shadow-lg hover:shadow-xl transition-shadow duration-200">

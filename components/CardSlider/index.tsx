@@ -6,13 +6,14 @@ import 'swiper/css/pagination';
 import Image from 'next/image';
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
+import {useMemo} from "react";
 
 type Props = {
     images: string[]
 }
 
 export default function CarSlider({ images }: Props) {
-    const limitedImages = images.slice(0, 12);
+    const limitedImages = useMemo(() => images.slice(0, 12), [images]);
 
     return (
         <div className="mb-4">
